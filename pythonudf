@@ -1,0 +1,47 @@
+
+
+CA,Irvine,73,54
+CA,San Diego,70,58
+CA,Berkeley,68,48
+CA,San Jose,73,51
+MA,Boston,59,44
+MA,Bedford,60,38
+MA,Charlton,58,36
+WA,Seattle,60,45
+WA,Tacoma,62,45
+
+--------------------
+
+-- Load input data from a file
+d = load 'metro.txt' using PigStorage(',') as (state:chararray, city:chararray, high:chararray, low:chararray);
+ 
+-- Group data by state
+g = group d by state; 
+ 
+-- Show the results
+dump g;
+----------------------
+getCitiesLow.py
+----------------
+# Pig UDF returns a bag of 2-element tuples
+@outputSchema('result:{t:(city:chararray,low:chararray)}')
+def getCitiesLow(data):
+    result = []
+    # Select first 2 items i group only
+    for i in range(2):
+        city = data[i][1]
+        low = data[i][3]
+        result.append((city, low))
+    return result
+---------------------
+
+-- Register UDF
+register './getCitiesLow.py' USING jython as udf;
+ 
+-- Transforming data using UDF
+s = foreach g generate group, udf.getCitiesLow(d);
+ 
+-- Show the results
+dump s;
+---------------------------
+
