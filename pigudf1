@@ -1,0 +1,23 @@
+pig_udf.pig
+===========
+register 'to_uppercase.py' using org.apache.pig.scripting.jython.JythonScriptEngine as up;
+a = load 'data.txt' using PigStorage('\n') as (name:chararray);
+b = foreach a generate up.to_uppercase(name);
+
+data.txt
+=========
+hello
+world
+hello
+hduser
+welcome
+to
+cbit
+-------------------------
+
+to_uppercase.py
+=============
+def to_uppercase(value):
+    if value is None:
+        return None
+    return value.upper()
